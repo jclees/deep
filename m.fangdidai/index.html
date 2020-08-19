@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="email=no" name="format-detection">
+    <meta name="description" content="不超过150个字符" />
+    <meta name="keywords" content="" />
+    <meta content="caibaojian" name="author" />
+    <title>养财宝 · 得财宝</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.9/lib/index.css" />
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/animate.min.css">
+
+
+    <script src="js/rem.js"></script>
+    <style>
+        video {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .lz_wrap {
+            width: 100%;
+            height: 100%;
+            background: #ccc;
+        }
+
+        .lz_txt {
+            font-size: 18px;
+            color: #203152;
+            text-align: center;
+            padding: 40px 0;
+        }
+        .txt_zindx{
+            position: relative;
+        }
+        .txt_zindx p{
+            font-size: 24px;
+            color: #203152;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+            z-index: 10;
+        }
+        .txt_zindx::after{
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: -2%;
+            transform: translate(-50%,0);
+            width: 20%;
+            height: 8px;
+            background: #E6EDFB;
+            z-index: 1;
+        }
+
+        .lb_circle_wrap {
+            position: relative;
+            overflow: hidden;
+            border-radius: 100%;
+        }
+
+        .lb_circle {
+            margin: 0 auto;
+            display: block;
+        }
+
+        .lb_circle_bg {
+            background: red;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .lz_btn {
+            position: fixed;
+            left: 50%;
+            bottom: 10%;
+            transform: translate(-50%, 0);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" style="height: 100%;">
+        <div class="lz_wrap">
+            <p class="lz_txt">请把面部放置在取景框内</p>
+            <div class="txt_zindx">
+                <p>银行卡验证</p>
+            </div>
+            <div class="lb_circle_wrap">
+                <van-circle v-model="currentRate" :rate="rate" :speed="10" size="220px" stroke-width="8" color="#1377FF"
+                    class="lb_circle" />
+                <!-- 
+                <div class="lb_circle_bg">1</div> -->
+                <video id="myVideo"></video>
+
+            </div>
+
+        </div>
+
+        <van-button type="info" size="small" @click="startLz" class="lz_btn">开始录制</van-button>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vant@2.9/lib/vant.min.js"></script>
+<script src="js/MediaStreamRecorder.js"></script>
+<script src="js/jquery.min.js"></script>
+<script>
+    var aa = ''; //防止两次上传
+    var mediaRecorder;
+    var index = 1;//定时加1 	        
+    var dingshi;
+    var mediaConstraints = { audio: true, video: { width: 1280, height: 720 } };
+
+    // 在 #app 标签下渲染一个按钮组件
+    let vm = new Vue({
+        el: '#app',
+        data: {
+            currentRate: 100,
+            rate: 100
+        },
+        methods: {
+            startLz() {
+                let that = this;
+                that.$options.methods.captureUserMedia(mediaConstraints, that.$options.methods.onMediaSuccess, that.$options.methods.onMediaError);
+            },
+            captureUserMedia(mediaConstraints, successCallback, errorCallback) {
+                console.log(vm)
+                navigator.mediaDevices.getUserMedia(mediaConstraints).then(successCallback).catch(errorCallback);
+            },
+            onMediaError(e) {
+
+            },
+            onMediaSuccess(stream) {
+                var video = document.querySelector('video');
+                //  赋值 video 并开始播放
+                video.srcObject = stream;
+                video.onloadedmetadata = function (e) {
+                    video.play();
+                };
+                mediaRecorder = new MediaStreamRecorder(stream);
+                mediaRecorder.stream = stream;
+                /*    //  录像api的调用 */
+                mediaRecorder.mimeType = 'video/mp4';
+
+                let timer = setInterval(() => {
+                    vm.rate -= 10
+                    console.log(vm.rate)
+                    if (vm.rate == 0) {
+                        clearInterval(timer)
+                        setTimeout(() => {
+                            mediaRecorder.stop();
+                            mediaRecorder.stream.stop();
+                        }, 1000)
+                    }
+                }, 1000);
+
+                mediaRecorder.start(12000000000);
+                //  停止录像以后的回调函数
+
+                mediaRecorder.ondataavailable = function (blob) {
+
+                    if (aa == "") {
+                        var file = new File([blob], 'msr-' + (new Date).toISOString().replace(/:|\./g, '-') + '.mp4', {
+                            type: 'video/mp4'
+                        });
+                        console.log(file);
+
+                        var formData = new FormData();
+                        formData.append('file', file);
+                        console.log(formData);
+
+                        // $.ajax({
+                        //     url: root + "/upload/video.do",
+                        //     type: "post",
+                        //     cache: false,
+                        //     data: formData,
+                        //     dataType: "json",
+                        //     processData: false,
+                        //     contentType: false,
+                        //     error: function () {
+                        //         alert("暂时无法操作，请刷新后再试！");
+                        //     },
+                        //     success: function (result) {
+
+                        //         if (result.code == 0) {
+                        //             var params = result.data;
+                        //             console.log(params);
+                        //             console.log(params.fileUrl);
+                        //             /* $("#lzvideo").attr("src", params.fileUrl); */
+
+                        //         } else {
+
+                        //         }
+                        //     }
+                        // });
+
+                        aa = blob;
+                    }
+                };
+            }
+        }
+    });
+
+    // 调用函数组件，弹出一个 Toast
+    // vant.Toast('提示');
+
+    // 通过 CDN 引入时不会自动注册 Lazyload 组件
+    // 可以通过下面的方式手动注册
+    Vue.use(vant.Lazyload);
+</script>
+
+</html>

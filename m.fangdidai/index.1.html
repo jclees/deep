@@ -1,0 +1,197 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" name="viewport">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="telephone=no" name="format-detection">
+    <meta content="email=no" name="format-detection">
+    <meta name="description" content="不超过150个字符" />
+    <meta name="keywords" content="" />
+    <meta content="caibaojian" name="author" />
+    <title>银行卡</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.9/lib/index.css" />
+    <link rel="stylesheet" href="css/reset.css">
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
+
+    <style>
+        .txt_zindx {
+            position: relative;
+        }
+
+        .txt_zindx p {
+            font-size: 24px;
+            color: #203152;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .txt_zindx::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: -2%;
+            transform: translate(-50%, 0);
+            width: 20%;
+            height: 8px;
+            background: #E6EDFB;
+        }
+
+        .txt_tit {
+            color: #8D96A6;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .txt_tit2 {
+            color: #8D96A6;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .van-uploader__upload,
+        .van-uploader__preview-image {
+            width: 290px;
+            height: 170px;
+            border-radius: 6px;
+            background-color: #1377FF;
+        }
+
+        .van-uploader__preview-delete {
+            width: 28px;
+            height: 28px;
+            border-radius: 0 0 0 28px;
+        }
+
+        .van-uploader__preview-delete-icon {
+            font-size: 26px;
+        }
+
+        .diy_uploader {
+            display: block;
+        }
+        .pop{
+            width: 321px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            padding: 32px;
+            transform: translate(-50%,-50%);
+        }
+        .pop_tit{
+            color: #203152;
+            font-size: 19px;
+            text-align: center;
+        }
+        .pop_tips{
+            color: #7C8698;
+            font-size: 14px;
+            text-align: center;
+        }
+        .btn-group{
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" style="height: 100%;">
+        <div>
+
+            <p class="txt_tit">请上传或拍照本人储蓄卡或信用卡</p>
+            <div class="txt_zindx">
+                <p>银行卡验证</p>
+            </div>
+            <p class="txt_tit2">保持照片中银行卡信息完整，字体清晰可见，</p>
+
+            <van-uploader v-model="fileList" :max-count="1" :after-read="afterRead" class="diy_uploader" />
+
+        </div>
+
+        <van-cell-group>
+            <van-cell value="手动输入银行卡号"></van-cell>
+            <van-field v-model="value1" placeholder="请输入银行卡号" />
+        </van-cell-group>
+
+        <van-cell-group>
+            <van-cell value="输入银行卡预留手机号"></van-cell>
+            <van-field v-model="card" placeholder="请输入银行卡预留手机号" />
+        </van-cell-group>
+
+        <van-cell-group>
+            <van-cell>
+                <van-button color="#1377FF" size="small" block @click="" class="lz_btn">提交</van-button>
+            </van-cell>
+        </van-cell-group>
+
+
+        <van-overlay :show="show">
+            <div @click.stop class="pop">
+                <van-cell-group>
+                    <div class="pop_tit">请确认银行卡信息</div>
+                    <div class="pop_tips">若银行卡信息有误，请点击重拍</div>
+                    <van-field v-model="value1" label="卡号" placeholder="请输入银行卡号" :readonly="readonly"
+                        right-icon="warning-o" @click-right-icon="readonly=!readonly">
+                    </van-field>
+                </van-cell-group>
+                <div class="btn-group">
+                    <van-button color="#89BBFF" size="small" @click="agin">重拍</van-button>
+                    <van-button color="#1377FF" size="small" @click="show = false">确定</van-button>
+                </div>
+            </div>
+        </van-overlay>
+
+
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vant@2.9/lib/vant.min.js"></script>
+<script src="js/jquery.min.js"></script>
+<script>
+    // 在 #app 标签下渲染一个按钮组件
+    let vm = new Vue({
+        el: '#app',
+        data: {
+            currentRate: 100,
+            rate: 100,
+            card: "",
+            show: true,
+            readonly: true,
+            value1: '12345678764213456',
+            fileList: [
+
+            ],
+        },
+        methods: {
+            agin() {
+                this.fileList = []
+                this.show = false
+            },
+            afterRead(file) {
+                file.status = 'uploading';
+                file.message = '上传中...';
+
+                setTimeout(() => {
+                    file.status = 'succes';
+                    this.show = true
+                }, 1000);
+            },
+
+        }
+    });
+
+    // 调用函数组件，弹出一个 Toast
+    // vant.Toast('人脸验证失败，请重新识别');
+
+    // 通过 CDN 引入时不会自动注册 Lazyload 组件
+    // 可以通过下面的方式手动注册
+    Vue.use(vant.Lazyload);
+</script>
+
+</html>
